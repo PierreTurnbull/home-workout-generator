@@ -25,6 +25,10 @@ export interface Messages {
     restBetweenRounds: string;
     startCircuit: string;
   };
+  nav: {
+    build: string;
+    history: string;
+  };
   generator: {
     title: string;
     copy: string;
@@ -84,6 +88,35 @@ export interface Messages {
     rounds: string;
     buildNew: string;
     roundsOf: string;
+  };
+  history: {
+    title: string;
+    subtitle: string;
+    empty: string;
+    completed: string;
+    finishedEarly: string;
+    back: string;
+    delete: string;
+    deleteConfirmTitle: string;
+    deleteConfirmMessage: string;
+    deleteConfirmAction: string;
+    deleteConfirmCancel: string;
+    summary: string;
+    detailTitle: string;
+    detailSubtitle: string;
+    detailSubtitleEarly: string;
+    effort: string;
+    effortLabel: string;
+    effortTooltip: string;
+    listDateLabel: string;
+    listSessionLabel: string;
+    listMeta: string;
+    effortChartTitle: string;
+    regularityTitle: string;
+    chartNeedsMore: string;
+    weekStreak: string;
+    weekStreaks: string;
+    weeklyAverage: string;
   };
   quantity: {
     reps: string;

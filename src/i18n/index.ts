@@ -106,4 +106,68 @@ export function tRecapRounds(count: number): string {
   return interpolate(template, { count });
 }
 
+export function formatHistoryDate(timestamp: number): string {
+  return new Intl.DateTimeFormat(currentLocale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(timestamp));
+}
+
+export function formatHistoryDateShort(timestamp: number): string {
+  return new Intl.DateTimeFormat(currentLocale, {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(timestamp));
+}
+
+export function formatDurationShort(ms: number): string {
+  const totalMinutes = Math.max(1, Math.round(ms / 60_000));
+  if (totalMinutes < 60) return `${totalMinutes}m`;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return minutes > 0 ? `${hours}h${minutes}` : `${hours}h`;
+}
+
+export function tHistoryListMeta(
+  duration: string,
+  roundsCompleted: number,
+  plannedRounds: number,
+): string {
+  return interpolate(messages.history.listMeta, {
+    duration,
+    rounds: tRoundsCompleted(roundsCompleted, plannedRounds),
+  });
+}
+
+export function tEffortScore(score: number): string {
+  return interpolate(messages.history.effort, { score });
+}
+
+export function tWeekStreak(count: number): string {
+  const template = count === 1 ? messages.history.weekStreak : messages.history.weekStreaks;
+  return interpolate(template, { count });
+}
+
+export function tWeeklyAverage(count: number): string {
+  return interpolate(messages.history.weeklyAverage, { count });
+}
+
+export function tHistorySummary(
+  duration: string,
+  roundsCompleted: number,
+  plannedRounds: number,
+): string {
+  return interpolate(messages.history.summary, {
+    duration,
+    rounds: tRoundsCompleted(roundsCompleted, plannedRounds),
+  });
+}
+
+export function tHistoryDetailSubtitle(finishedEarly: boolean, date: string): string {
+  const template = finishedEarly
+    ? messages.history.detailSubtitleEarly
+    : messages.history.detailSubtitle;
+  return interpolate(template, { date });
+}
+
 export { messages };

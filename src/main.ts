@@ -2,8 +2,10 @@ import { registerSW } from "virtual:pwa-register";
 import type {
   AppPhase,
   Circuit,
+  CompletedWorkout,
   ExerciseSet,
   QuantityType,
+  SavedCircuit,
   TimerState,
   WorkoutSession,
 } from "./types";
@@ -16,12 +18,18 @@ import {
 import { getExerciseGifSearchUrl } from "./exercise-search";
 import {
   applyDocumentLocale,
+  formatDurationShort,
+  formatHistoryDate,
+  formatHistoryDateShort,
   getLocalePreference,
   messages,
   setLocalePreference,
+  tEffortScore,
   tExerciseGuide,
   tGroup,
   tGeneratorDuration,
+  tHistoryDetailSubtitle,
+  tHistoryListMeta,
   tRecapRounds,
   tRestNextRound,
   tRoundBadge,
@@ -30,13 +38,28 @@ import {
   type LocalePreference,
 } from "./i18n";
 import {
+  buildCompletedWorkout,
+  deleteHistoryEntry,
+  getHistoryEntry,
+  loadHistory,
+  saveCompletedWorkout,
+} from "./history";
+import { renderHistoryInsights } from "./history-charts";
+import {
+  clearSeedHistoryQueryParam,
+  seedWorkoutHistory,
+  shouldSeedWorkoutHistoryFromQuery,
+} from "./dev-seed-history";
+import {
   generateCircuit,
   regenerateExerciseAtIndex,
   type CircuitDuration,
   type CircuitIntensity,
   type GeneratorOptions,
 } from "./generator";
+import { renderLabelWithTooltip } from "./label-tooltip";
 import { playTimerDoneAlert } from "./alerts";
+import { computeEffortScore, effortScoreClass } from "./effort-score";
 import {
   createId,
   formatDuration,
@@ -70,6 +93,11 @@ let openGuideExerciseId: string | null = null;
 let guideEscapeHandler: ((event: KeyboardEvent) => void) | null = null;
 let showFinishConfirm = false;
 let finishConfirmEscapeHandler: ((event: KeyboardEvent) => void) | null = null;
+let showDeleteConfirm = false;
+let pendingDeleteHistoryId: string | null = null;
+let deleteConfirmEscapeHandler: ((event: KeyboardEvent) => void) | null = null;
+let historyEntries: CompletedWorkout[] = loadHistory();
+let selectedHistoryId: string | null = null;
 
 function createDefaultSet(): ExerciseSet {
   return {
@@ -95,14 +123,23 @@ function render(): void {
 
   if (phase === "editing") {
     renderEditor();
+  } else if (phase === "history") {
+    renderHistory();
   } else if (phase === "running" && session) {
     renderRunner();
   } else if (phase === "completed" && session) {
     renderCompletion();
+  } else if (phase === "history-detail" && selectedHistoryId) {
+    renderHistoryDetail();
+  }
+
+  if (phase === "editing" || phase === "history") {
+    app.append(renderBottomNav());
   }
 
   renderGuideOverlay();
   renderFinishConfirmOverlay();
+  renderDeleteConfirmOverlay();
 }
 
 function openExerciseGuide(exerciseId: string): void {
@@ -200,6 +237,93 @@ function renderFinishConfirmOverlay(): void {
       if (event.key === "Escape") closeFinishConfirm();
     };
     document.addEventListener("keydown", finishConfirmEscapeHandler);
+  }
+}
+
+function openDeleteConfirm(id: string): void {
+  pendingDeleteHistoryId = id;
+  showDeleteConfirm = true;
+  renderDeleteConfirmOverlay();
+}
+
+function closeDeleteConfirm(): void {
+  showDeleteConfirm = false;
+  pendingDeleteHistoryId = null;
+  removeDeleteConfirmOverlay();
+  if (deleteConfirmEscapeHandler) {
+    document.removeEventListener("keydown", deleteConfirmEscapeHandler);
+    deleteConfirmEscapeHandler = null;
+  }
+}
+
+function removeDeleteConfirmOverlay(): void {
+  document.getElementById("delete-confirm-overlay")?.remove();
+}
+
+function renderDeleteConfirmOverlay(): void {
+  removeDeleteConfirmOverlay();
+  if (!showDeleteConfirm) return;
+
+  const overlay = el(
+    "div",
+    {
+      id: "delete-confirm-overlay",
+      className: "confirm-overlay",
+      role: "alertdialog",
+      ariaLabel: messages.history.deleteConfirmTitle,
+    },
+    [
+      el("button", {
+        type: "button",
+        className: "confirm-backdrop",
+        ariaLabel: messages.history.deleteConfirmCancel,
+        onClick: closeDeleteConfirm,
+      }),
+      el("div", { className: "confirm-sheet" }, [
+        el("h2", {
+          className: "confirm-title",
+          text: messages.history.deleteConfirmTitle,
+        }),
+        el("p", {
+          className: "confirm-message",
+          text: messages.history.deleteConfirmMessage,
+        }),
+        el("div", { className: "confirm-actions" }, [
+          el(
+            "button",
+            {
+              type: "button",
+              className: "btn btn-accent btn-block btn-lg",
+              onClick: closeDeleteConfirm,
+            },
+            messages.history.deleteConfirmCancel,
+          ),
+          el(
+            "button",
+            {
+              type: "button",
+              className: "btn btn-ghost btn-block",
+              onClick: () => {
+                if (!pendingDeleteHistoryId) return;
+                const id = pendingDeleteHistoryId;
+                closeDeleteConfirm();
+                removeHistoryEntry(id);
+              },
+            },
+            messages.history.deleteConfirmAction,
+          ),
+        ]),
+      ]),
+    ],
+  );
+
+  document.body.appendChild(overlay);
+
+  if (!deleteConfirmEscapeHandler) {
+    deleteConfirmEscapeHandler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDeleteConfirm();
+    };
+    document.addEventListener("keydown", deleteConfirmEscapeHandler);
   }
 }
 
@@ -322,7 +446,7 @@ function renderLocalePicker(): HTMLElement {
 }
 
 function renderEditor(): void {
-  const container = el("div", { className: "screen editor-screen" });
+  const container = el("div", { className: "screen editor-screen screen-with-nav" });
 
   container.append(
     el("header", { className: "screen-header screen-header-with-locale" }, [
@@ -878,6 +1002,309 @@ function startTimer(totalSeconds: number): void {
   render();
 }
 
+function refreshHistory(): void {
+  historyEntries = loadHistory();
+}
+
+function persistCompletedWorkout(activeSession: WorkoutSession): void {
+  if (!activeSession.completedAt) return;
+  saveCompletedWorkout(buildCompletedWorkout(activeSession));
+  refreshHistory();
+}
+
+function openHistory(): void {
+  refreshHistory();
+  phase = "history";
+  render();
+}
+
+function openEditor(): void {
+  phase = "editing";
+  render();
+}
+
+function openHistoryDetail(id: string): void {
+  selectedHistoryId = id;
+  phase = "history-detail";
+  render();
+}
+
+function closeHistoryDetail(): void {
+  closeDeleteConfirm();
+  selectedHistoryId = null;
+  phase = "history";
+  render();
+}
+
+function removeHistoryEntry(id: string): void {
+  deleteHistoryEntry(id);
+  refreshHistory();
+  if (selectedHistoryId === id) {
+    closeHistoryDetail();
+    return;
+  }
+  render();
+}
+
+function renderBottomNav(): HTMLElement {
+  return el("nav", { className: "bottom-nav", ariaLabel: "Main" }, [
+    el(
+      "button",
+      {
+        type: "button",
+        className: `bottom-nav-item ${phase === "editing" ? "active" : ""}`,
+        onClick: openEditor,
+      },
+      [
+        el("span", { className: "bottom-nav-icon", text: "⚡" }),
+        el("span", { className: "bottom-nav-label", text: messages.nav.build }),
+      ],
+    ),
+    el(
+      "button",
+      {
+        type: "button",
+        className: `bottom-nav-item ${phase === "history" ? "active" : ""}`,
+        onClick: openHistory,
+      },
+      [
+        el("span", { className: "bottom-nav-icon", text: "📋" }),
+        el("span", { className: "bottom-nav-label", text: messages.nav.history }),
+      ],
+    ),
+  ]);
+}
+
+function renderHistoryList(): HTMLElement {
+  if (historyEntries.length === 0) {
+    return el("div", { className: "history-list-panel history-list-panel-empty" }, [
+      el("div", { className: "history-empty-state" }, [
+        el("p", { className: "history-empty-icon", text: "🏁" }),
+        el("p", { className: "history-empty", text: messages.history.empty }),
+      ]),
+    ]);
+  }
+
+  return el("div", { className: "history-list-panel" }, [
+    el("div", { className: "history-list-header" }, [
+      el("span", { className: "history-list-col-date", text: messages.history.listDateLabel }),
+      el("span", { className: "history-list-col-meta", text: messages.history.listSessionLabel }),
+      (() => {
+        const col = document.createElement("span");
+        col.className = "history-list-col-effort";
+        col.appendChild(
+          renderLabelWithTooltip(
+            messages.history.effortLabel,
+            messages.history.effortTooltip,
+            "below",
+          ),
+        );
+        return col;
+      })(),
+    ]),
+    el(
+      "div",
+      { className: "history-list-scroll" },
+      el(
+        "ul",
+        { className: "history-list" },
+        historyEntries.map((entry) => {
+        const effort = computeEffortScore(entry);
+        const durationMs = entry.completedAt - entry.startedAt;
+
+        return el(
+          "li",
+          { className: "history-item" },
+          el(
+            "button",
+            {
+              type: "button",
+              className: `history-item-btn ${entry.finishedEarly ? "early" : "complete"}`,
+              onClick: () => openHistoryDetail(entry.id),
+            },
+            [
+              el("span", {
+                className: "history-item-date",
+                text: formatHistoryDateShort(entry.completedAt),
+              }),
+              el("span", {
+                className: "history-item-meta",
+                text: tHistoryListMeta(
+                  formatDurationShort(durationMs),
+                  entry.roundsCompleted,
+                  entry.plannedRounds,
+                ),
+              }),
+              el("span", {
+                className: `history-item-effort ${effortScoreClass(effort)}`,
+                text: tEffortScore(effort),
+              }),
+            ],
+          ),
+        );
+      }),
+      ),
+    ),
+  ]);
+}
+
+function renderHistory(): void {
+  refreshHistory();
+
+  const container = el("div", { className: "screen history-screen screen-with-nav" });
+
+  container.append(
+    el("header", { className: "screen-header screen-header-with-locale" }, [
+      el("div", { className: "screen-header-main" }, [
+        el("h1", { text: messages.history.title }),
+        el("p", { className: "subtitle", text: messages.history.subtitle }),
+      ]),
+      renderLocalePicker(),
+    ]),
+  );
+  const insights = renderHistoryInsights(historyEntries);
+  if (insights) container.append(insights);
+  container.append(renderHistoryList());
+
+  app.append(container);
+}
+
+function renderWorkoutStatsAndRecap(
+  workout: {
+    startedAt: number;
+    completedAt: number;
+    finishedEarly: boolean;
+    roundsCompleted: number;
+    plannedRounds: number;
+    stoppedAtRound?: number;
+    stoppedAtExerciseId?: string;
+    circuit: SavedCircuit;
+  },
+  options?: { effortScore?: number },
+): HTMLElement[] {
+  const totalMs = workout.completedAt - workout.startedAt;
+  const stoppedMidRound = Boolean(workout.stoppedAtRound && workout.stoppedAtExerciseId);
+  const effort = options?.effortScore ?? computeEffortScore(workout as CompletedWorkout);
+
+  return [
+    el("section", { className: "card stats-card" }, [
+      el("div", { className: "stat" }, [
+        (() => {
+          const label = document.createElement("span");
+          label.className = "stat-label";
+          label.appendChild(
+            renderLabelWithTooltip(messages.history.effortLabel, messages.history.effortTooltip),
+          );
+          return label;
+        })(),
+        el("span", {
+          className: `stat-value history-item-effort ${effortScoreClass(effort)}`,
+          text: tEffortScore(effort),
+        }),
+      ]),
+      el("div", { className: "stat" }, [
+        el("span", { className: "stat-label", text: messages.completion.totalTime }),
+        el("span", { className: "stat-value", text: formatElapsed(totalMs) }),
+      ]),
+      el("div", { className: "stat" }, [
+        el("span", { className: "stat-label", text: messages.completion.roundsCompleted }),
+        el("span", {
+          className: "stat-value",
+          text: workout.finishedEarly
+            ? tRoundsCompleted(workout.roundsCompleted, workout.plannedRounds)
+            : String(workout.plannedRounds),
+        }),
+      ]),
+      el("div", { className: "stat" }, [
+        el("span", { className: "stat-label", text: messages.completion.exercisesPerRound }),
+        el("span", { className: "stat-value", text: String(workout.circuit.sets.length) }),
+      ]),
+      workout.circuit.restBetweenRoundsSeconds > 0
+        ? el("div", { className: "stat" }, [
+            el("span", { className: "stat-label", text: messages.completion.restBetweenRounds }),
+            el("span", {
+              className: "stat-value",
+              text: formatDuration(workout.circuit.restBetweenRoundsSeconds),
+            }),
+          ])
+        : null,
+      stoppedMidRound && workout.stoppedAtRound && workout.stoppedAtExerciseId
+        ? el("div", { className: "stat" }, [
+            el("span", { className: "stat-label", text: messages.completion.stoppedAt }),
+            el("span", {
+              className: "stat-value",
+              text: tStoppedAt(
+                workout.stoppedAtRound,
+                getExerciseName(workout.stoppedAtExerciseId),
+              ),
+            }),
+          ])
+        : null,
+    ]),
+    el("section", { className: "card recap-card" }, [
+      el("h2", { className: "section-title", text: messages.completion.recap }),
+      el(
+        "ul",
+        { className: "recap-list" },
+        workout.circuit.sets.map((set) => {
+          const roundsLabel = tRecapRounds(workout.roundsCompleted);
+
+          return el("li", { className: "recap-item" }, [
+            el("span", { text: getExerciseName(set.exerciseId) }),
+            el("span", {
+              className: "recap-qty",
+              text: `${formatQuantity(set.quantityType, set.reps, set.durationSeconds)} × ${roundsLabel}`,
+            }),
+          ]);
+        }),
+      ),
+    ]),
+  ];
+}
+
+function renderHistoryDetail(): void {
+  const workout = selectedHistoryId ? getHistoryEntry(selectedHistoryId) : null;
+  if (!workout) {
+    closeHistoryDetail();
+    return;
+  }
+
+  const container = el("div", { className: "screen history-detail-screen" });
+
+  container.append(
+    el("header", { className: "history-detail-header" }, [
+      el(
+        "button",
+        {
+          type: "button",
+          className: "btn-text history-back-btn",
+          onClick: closeHistoryDetail,
+        },
+        messages.history.back,
+      ),
+      renderLocalePicker(),
+    ]),
+    el("div", { className: "history-detail-intro" }, [
+      el("h1", { text: messages.history.detailTitle }),
+      el("p", {
+        className: "subtitle",
+        text: tHistoryDetailSubtitle(workout.finishedEarly, formatHistoryDate(workout.completedAt)),
+      }),
+    ]),
+    ...renderWorkoutStatsAndRecap(workout),
+    el(
+      "button",
+      {
+        className: "btn btn-ghost btn-block",
+        onClick: () => openDeleteConfirm(workout.id),
+      },
+      messages.history.delete,
+    ),
+  );
+
+  app.append(container);
+}
+
 function completeCurrentExercise(): void {
   if (!session) return;
 
@@ -909,6 +1336,7 @@ function completeCurrentExercise(): void {
 
   session.completedAt = Date.now();
   session.finishedEarly = false;
+  persistCompletedWorkout(session);
   phase = "completed";
   stopElapsedTicker();
   render();
@@ -931,6 +1359,7 @@ function finishCircuit(): void {
   resetTimer();
   session.completedAt = Date.now();
   session.finishedEarly = true;
+  persistCompletedWorkout(session);
   phase = "completed";
   stopElapsedTicker();
   render();
@@ -948,88 +1377,26 @@ function backToEditor(): void {
 function renderCompletion(): void {
   if (!session?.completedAt) return;
 
-  const totalMs = session.completedAt - session.startedAt;
-  const { circuit: activeCircuit, finishedEarly, currentRound, currentSetIndex, isResting } =
-    session;
-  const fullRoundsCompleted = finishedEarly
-    ? isResting
-      ? currentRound
-      : currentRound - 1
-    : activeCircuit.rounds;
-  const stoppedMidRound = finishedEarly && !isResting && currentSetIndex > 0;
-  const stoppedExercise = stoppedMidRound
-    ? activeCircuit.sets[currentSetIndex]
-    : null;
-
+  const workout = buildCompletedWorkout(session);
   const container = el("div", { className: "screen completion-screen" });
 
   container.append(
     renderLocalePicker(),
     el("header", { className: "completion-header" }, [
       el("div", { className: "completion-icon", text: "🎉" }),
-      el("h1", { text: finishedEarly ? messages.completion.finishedTitle : messages.completion.completeTitle }),
+      el("h1", {
+        text: workout.finishedEarly
+          ? messages.completion.finishedTitle
+          : messages.completion.completeTitle,
+      }),
       el("p", {
         className: "subtitle",
-        text: finishedEarly
+        text: workout.finishedEarly
           ? messages.completion.finishedSubtitle
           : messages.completion.completeSubtitle,
       }),
     ]),
-    el("section", { className: "card stats-card" }, [
-      el("div", { className: "stat" }, [
-        el("span", { className: "stat-label", text: messages.completion.totalTime }),
-        el("span", { className: "stat-value", text: formatElapsed(totalMs) }),
-      ]),
-      el("div", { className: "stat" }, [
-        el("span", { className: "stat-label", text: messages.completion.roundsCompleted }),
-        el("span", {
-          className: "stat-value",
-          text: finishedEarly
-            ? tRoundsCompleted(fullRoundsCompleted, activeCircuit.rounds)
-            : String(activeCircuit.rounds),
-        }),
-      ]),
-      el("div", { className: "stat" }, [
-        el("span", { className: "stat-label", text: messages.completion.exercisesPerRound }),
-        el("span", { className: "stat-value", text: String(activeCircuit.sets.length) }),
-      ]),
-      activeCircuit.restBetweenRoundsSeconds > 0
-        ? el("div", { className: "stat" }, [
-            el("span", { className: "stat-label", text: messages.completion.restBetweenRounds }),
-            el("span", {
-              className: "stat-value",
-              text: formatDuration(activeCircuit.restBetweenRoundsSeconds),
-            }),
-          ])
-        : null,
-      stoppedMidRound && stoppedExercise
-        ? el("div", { className: "stat" }, [
-            el("span", { className: "stat-label", text: messages.completion.stoppedAt }),
-            el("span", {
-              className: "stat-value",
-              text: tStoppedAt(currentRound, getExerciseName(stoppedExercise.exerciseId)),
-            }),
-          ])
-        : null,
-    ]),
-    el("section", { className: "card recap-card" }, [
-      el("h2", { className: "section-title", text: messages.completion.recap }),
-      el(
-        "ul",
-        { className: "recap-list" },
-        activeCircuit.sets.map((set) => {
-          const roundsLabel = tRecapRounds(fullRoundsCompleted);
-
-          return el("li", { className: "recap-item" }, [
-            el("span", { text: getExerciseName(set.exerciseId) }),
-            el("span", {
-              className: "recap-qty",
-              text: `${formatQuantity(set.quantityType, set.reps, set.durationSeconds)} × ${roundsLabel}`,
-            }),
-          ]);
-        }),
-      ),
-    ]),
+    ...renderWorkoutStatsAndRecap(workout),
     el(
       "button",
       {
@@ -1157,5 +1524,25 @@ function stopElapsedTicker(): void {
 }
 
 applyDocumentLocale();
-render();
+
+if (import.meta.env.DEV) {
+  (window as Window & { seedWorkoutHistory?: () => Promise<number> }).seedWorkoutHistory =
+    async () => {
+      historyEntries = await seedWorkoutHistory();
+      render();
+      return historyEntries.length;
+    };
+}
+
+if (shouldSeedWorkoutHistoryFromQuery()) {
+  void seedWorkoutHistory().then((entries) => {
+    historyEntries = entries;
+    clearSeedHistoryQueryParam();
+    render();
+    console.info(`Seeded ${entries.length} workout history entries.`);
+  });
+} else {
+  render();
+}
+
 registerSW({ immediate: true });

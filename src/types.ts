@@ -23,7 +23,32 @@ export interface Circuit {
   restBetweenRoundsInput: string;
 }
 
-export type AppPhase = "editing" | "running" | "completed";
+export type AppPhase = "editing" | "running" | "completed" | "history" | "history-detail";
+
+export interface SavedExerciseSet {
+  exerciseId: string;
+  quantityType: QuantityType;
+  reps: number;
+  durationSeconds: number;
+}
+
+export interface SavedCircuit {
+  sets: SavedExerciseSet[];
+  rounds: number;
+  restBetweenRoundsSeconds: number;
+}
+
+export interface CompletedWorkout {
+  id: string;
+  startedAt: number;
+  completedAt: number;
+  finishedEarly: boolean;
+  roundsCompleted: number;
+  plannedRounds: number;
+  stoppedAtRound?: number;
+  stoppedAtExerciseId?: string;
+  circuit: SavedCircuit;
+}
 
 export interface WorkoutSession {
   circuit: Circuit;
