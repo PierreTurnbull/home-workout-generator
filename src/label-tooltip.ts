@@ -1,3 +1,5 @@
+import { createHelpIcon } from "./help-icon";
+
 export type TooltipPlacement = "above" | "below";
 
 export function renderLabelWithTooltip(
@@ -17,7 +19,7 @@ export function renderLabelWithTooltip(
   button.type = "button";
   button.className = "label-tooltip-btn";
   button.setAttribute("aria-label", tooltip);
-  button.textContent = "i";
+  button.appendChild(createHelpIcon());
 
   const bubble = document.createElement("span");
   bubble.className = "label-tooltip-bubble";
@@ -27,7 +29,19 @@ export function renderLabelWithTooltip(
   button.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    wrap.classList.toggle("open");
+    const isOpen = wrap.classList.contains("open");
+    if (isOpen) {
+      wrap.classList.remove("open");
+      wrap.classList.add("dismissed");
+      button.blur();
+    } else {
+      wrap.classList.remove("dismissed");
+      wrap.classList.add("open");
+    }
+  });
+
+  wrap.addEventListener("mouseleave", () => {
+    wrap.classList.remove("dismissed");
   });
 
   wrap.append(labelText, button, bubble);

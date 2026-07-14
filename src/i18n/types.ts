@@ -83,7 +83,6 @@ export interface Messages {
     stoppedAt: string;
     stoppedAtValue: string;
     recap: string;
-    plannedCircuit: string;
     round: string;
     rounds: string;
     buildNew: string;

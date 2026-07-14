@@ -1,0 +1,18 @@
+Home Workout Generator helps you build and run effective workouts at home without equipment guesswork.
+
+Generate a balanced full-body circuit in one tap, or build your own workout exercise by exercise. Set reps or timed holds, choose rounds, add optional rest between rounds, then run the session with clear exercise guidance, countdown timers, and sound alerts.
+
+FEATURES
+• Quick workout generator with light, moderate, and intense options
+• Custom circuit builder with preset exercises
+• Built-in exercise guides
+• Round tracking and rest timers
+• Workout history with effort scores
+• Effort trend and weekly consistency charts
+• English and French
+• Works offline after install
+
+PRIVACY
+Your workout history stays on your device. The app does not collect or sell personal data.
+
+Perfect for home training when you want structure without a complicated fitness app.

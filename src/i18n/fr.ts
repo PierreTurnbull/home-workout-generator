@@ -91,7 +91,6 @@ export const fr: Messages = {
     stoppedAt: "Arrêté à",
     stoppedAtValue: "Tour {round}, {exercise}",
     recap: "Récapitulatif",
-    plannedCircuit: "circuit prévu",
     round: "{count} tour",
     rounds: "{count} tours",
     buildNew: "Créer un nouveau circuit",

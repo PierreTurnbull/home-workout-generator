@@ -1,4 +1,4 @@
-package com.pierreturnbull.workoutcircuit;
+package com.pierreturnbull.homeworkoutgenerator;
 
 import com.getcapacitor.BridgeActivity;
 

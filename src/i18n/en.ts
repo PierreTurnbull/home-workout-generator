@@ -91,7 +91,6 @@ export const en: Messages = {
     stoppedAt: "Stopped at",
     stoppedAtValue: "Round {round}, {exercise}",
     recap: "Recap",
-    plannedCircuit: "planned circuit",
     round: "{count} round",
     rounds: "{count} rounds",
     buildNew: "Build a new circuit",

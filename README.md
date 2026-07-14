@@ -33,6 +33,21 @@ npm run preview
 
 Live site: https://pierreturnbull.github.io/home-workout-generator/
 
+## Google Play (Android)
+
+See [docs/GOOGLE_PLAY.md](docs/GOOGLE_PLAY.md) for building and uploading the Android app bundle.
+
+Quick start:
+
+```bash
+brew install --cask temurin@21
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+npm run android:setup-signing
+npm run android:bundle
+```
+
+Store listing copy is ready in `store-listing/`.
+
 ## Session behavior
 
 Circuits are kept in memory for the current session only. Refreshing the page clears your circuit.

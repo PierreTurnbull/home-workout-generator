@@ -11,6 +11,8 @@
     "android:run": "npm run build:android && npx cap run android",
     "android:bundle": "npm run build:android && cd android && ./gradlew bundleRelease",
     "android:icons": "npx capacitor-assets generate --android",
+    "android:check": "bash scripts/android-env-check.sh",
+    "android:setup-signing": "bash scripts/android-setup-signing.sh",
     "preview": "vite preview"
   },
   "devDependencies": {

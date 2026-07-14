@@ -1,0 +1,1 @@
+Améliorations de l'interface : icônes d'aide, corrections des infobulles et aperçu du circuit.

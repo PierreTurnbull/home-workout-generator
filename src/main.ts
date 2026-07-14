@@ -60,6 +60,7 @@ import {
   type CircuitIntensity,
   type GeneratorOptions,
 } from "./generator";
+import { createHelpIcon } from "./help-icon";
 import { renderLabelWithTooltip } from "./label-tooltip";
 import { playTimerDoneAlert } from "./alerts";
 import { computeEffortScore, effortScoreClass } from "./effort-score";
@@ -426,7 +427,7 @@ function renderExerciseInfoButton(exerciseId: string): HTMLElement | null {
       ariaLabel: messages.guide.viewGuide,
       onClick: () => openExerciseGuide(exerciseId),
     },
-    "i",
+    createHelpIcon(),
   );
 }
 
@@ -835,7 +836,10 @@ function renderRunner(): void {
               className: `overview-item ${isCurrent ? "current" : ""} ${isDone && !isCurrent ? "done" : ""}`,
             },
             [
-              el("span", { className: "overview-name", text: getExerciseName(set.exerciseId) }),
+              el("span", { className: "overview-main" }, [
+                el("span", { className: "overview-name", text: getExerciseName(set.exerciseId) }),
+                renderExerciseInfoButton(set.exerciseId),
+              ]),
               el("span", {
                 className: "overview-qty",
                 text: formatQuantity(set.quantityType, set.reps, set.durationSeconds),
@@ -1263,7 +1267,7 @@ function renderWorkoutStatsAndRecap(
         "ul",
         { className: "recap-list" },
         workout.circuit.sets.map((set) => {
-          const roundsLabel = tRecapRounds(workout.roundsCompleted);
+          const roundsLabel = tRecapRounds(workout.plannedRounds);
 
           return el("li", { className: "recap-item" }, [
             el("span", { text: getExerciseName(set.exerciseId) }),

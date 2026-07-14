@@ -203,6 +203,10 @@ body {
   font-size: 0.78rem;
 }
 
+.set-row .exercise-info-btn .help-icon {
+  font-size: 0.78rem;
+}
+
 .sets-card {
   padding: 0.75rem;
 }
@@ -285,8 +289,7 @@ body {
   color: var(--text-muted);
 }
 
-.field-label-row,
-.current-name-row {
+.field-label-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -294,6 +297,10 @@ body {
 }
 
 .current-name-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
   margin-bottom: 0.35rem;
 }
 
@@ -302,16 +309,36 @@ body {
   min-width: 0;
 }
 
-.exercise-info-btn {
-  flex-shrink: 0;
-  font-size: 0.9rem;
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  box-sizing: border-box;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 1em;
   font-weight: 700;
   font-style: italic;
   font-family: Georgia, "Times New Roman", serif;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.exercise-info-btn {
+  flex-shrink: 0;
+}
+
+.exercise-info-btn .help-icon {
+  font-size: 1rem;
 }
 
 .exercise-info-btn:hover:not(:disabled) {
   background: rgba(56, 189, 248, 0.15);
+}
+
+.exercise-info-btn:hover:not(:disabled) .help-icon {
   color: var(--primary);
 }
 
@@ -734,8 +761,31 @@ select.input:focus {
   text-decoration: line-through;
 }
 
+.overview-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
 .overview-name {
   font-weight: 500;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.overview-item .exercise-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+.overview-item .exercise-info-btn .help-icon {
+  font-size: 0.72rem;
+  transform: translateY(-0.07em);
 }
 
 .overview-qty {
@@ -1151,25 +1201,27 @@ select.input:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 0.95rem;
-  height: 0.95rem;
   padding: 0;
   border: none;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.18);
+  background: transparent;
   color: var(--text-muted);
-  font-size: 0.62rem;
-  font-weight: 700;
-  font-style: italic;
-  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
 }
 
+.label-tooltip-btn .help-icon {
+  font-size: 0.85rem;
+  background: rgba(148, 163, 184, 0.18);
+}
+
 .label-tooltip-btn:hover {
-  background: rgba(56, 189, 248, 0.18);
   color: var(--primary);
+}
+
+.label-tooltip-btn:hover .help-icon {
+  background: rgba(56, 189, 248, 0.18);
 }
 
 .label-tooltip-bubble {
@@ -1198,8 +1250,8 @@ select.input:focus {
   transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 
-.label-with-tooltip:hover .label-tooltip-bubble,
-.label-with-tooltip:focus-within .label-tooltip-bubble,
+.label-with-tooltip:hover:not(.dismissed) .label-tooltip-bubble,
+.label-with-tooltip:focus-within:not(.dismissed) .label-tooltip-bubble,
 .label-with-tooltip.open .label-tooltip-bubble {
   opacity: 1;
   visibility: visible;
@@ -1212,6 +1264,11 @@ select.input:focus {
 
 .stat-label .label-with-tooltip {
   display: inline-flex;
+}
+
+.stat-label .label-tooltip-bubble {
+  right: auto;
+  left: 0;
 }
 
 .history-chart-title .label-with-tooltip-text {

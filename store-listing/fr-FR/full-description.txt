@@ -1,0 +1,18 @@
+Home Workout Generator vous aide à créer et suivre des entraînements efficaces à domicile, sans prise de tête.
+
+Générez un circuit full-body équilibré en un clic, ou composez votre séance exercice par exercice. Définissez répétitions ou durées, choisissez le nombre de tours, ajoutez un repos optionnel, puis lancez la séance avec des guides clairs, des minuteries et des alertes sonores.
+
+FONCTIONNALITÉS
+• Générateur rapide avec intensité légère, modérée ou intense
+• Création manuelle de circuits
+• Guides d'exercices intégrés
+• Suivi des tours et minuteries de repos
+• Historique avec score d'effort
+• Graphiques de tendance et de régularité
+• Français et anglais
+• Fonctionne hors ligne après installation
+
+CONFIDENTIALITÉ
+Votre historique reste sur votre appareil. L'application ne collecte ni ne vend de données personnelles.
+
+Idéal pour s'entraîner chez soi avec une structure simple, sans application fitness compliquée.

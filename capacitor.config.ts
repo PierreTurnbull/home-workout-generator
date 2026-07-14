@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.pierreturnbull.workoutcircuit",
+  appId: "com.pierreturnbull.homeworkoutgenerator",
   appName: "Home Workout Generator",
   webDir: "dist",
   android: {

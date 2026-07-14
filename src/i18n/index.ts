@@ -101,7 +101,6 @@ export function tRoundsCompleted(completed: number, total: number): string {
 }
 
 export function tRecapRounds(count: number): string {
-  if (count <= 0) return messages.completion.plannedCircuit;
   const template = count === 1 ? messages.completion.round : messages.completion.rounds;
   return interpolate(template, { count });
 }
