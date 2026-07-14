@@ -379,6 +379,15 @@ export const exerciseGuidesFr: Record<string, ExerciseGuide> = {
       "Revenez au centre et alternez.",
     ],
   },
+  "dead-bug-hold": {
+    summary: "Maintenez la position dead bug, bras et jambe opposés éloignés du centre.",
+    steps: [
+      "Allongé sur le dos, gainez pour garder le bas du dos plaqué.",
+      "Tendez le bras et la jambe opposés loin du corps.",
+      "Maintenez sans cambrer ni ouvrir les côtes.",
+      "Changez de côté après chaque maintien.",
+    ],
+  },
   "flutter-kicks": {
     summary: "Petits battements rapides des jambes allongé sur le dos.",
     steps: [
@@ -439,6 +448,15 @@ export const exerciseGuidesFr: Record<string, ExerciseGuide> = {
       "Sur le côté, avant-bras au sol, coude sous l'épaule.",
       "Superposez les pieds et levez les hanches pour aligner le corps.",
       "Main sur la hanche ou bras tendu vers le haut.",
+      "Maintenez sans laisser les hanches descendre.",
+    ],
+  },
+  "reverse-plank": {
+    summary: "Tenez le corps aligné face au plafond, appui sur les mains et les talons.",
+    steps: [
+      "Assis, jambes tendues, mains au sol derrière les hanches, doigts vers les pieds.",
+      "Poussez sur les mains et talons pour lever les hanches et aligner le corps.",
+      "Ouvrez la poitrine et contractez les fessiers.",
       "Maintenez sans laisser les hanches descendre.",
     ],
   },

@@ -379,6 +379,15 @@ export const exerciseGuidesEn: Record<string, ExerciseGuide> = {
       "Return to center and switch sides.",
     ],
   },
+  "dead-bug-hold": {
+    summary: "Hold the dead bug position with arms and legs extended away from your center.",
+    steps: [
+      "Lie on your back and brace your core so your lower back stays flat.",
+      "Extend opposite arm and leg away from your body.",
+      "Hold steady without letting your ribs flare or back arch.",
+      "Switch sides after each hold.",
+    ],
+  },
   "flutter-kicks": {
     summary: "Small, rapid up-and-down leg kicks while lying on your back.",
     steps: [
@@ -439,6 +448,15 @@ export const exerciseGuidesEn: Record<string, ExerciseGuide> = {
       "Lie on your side with your forearm on the floor, elbow under shoulder.",
       "Stack your feet and lift your hips to form a straight line.",
       "Keep your top hand on your hip or reach it upward.",
+      "Hold without letting your hips drop.",
+    ],
+  },
+  "reverse-plank": {
+    summary: "Hold your body in a straight line facing upward, supported on hands and heels.",
+    steps: [
+      "Sit with legs extended and hands on the floor behind your hips, fingers toward feet.",
+      "Press through your hands and heels to lift your hips until your body forms a line.",
+      "Keep your chest open and glutes engaged.",
       "Hold without letting your hips drop.",
     ],
   },
