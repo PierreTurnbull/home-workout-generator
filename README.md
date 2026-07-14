@@ -1,6 +1,6 @@
-# Workout Circuit
+# Home Workout Generator
 
-A progressive web app to build and run workout circuits.
+A progressive web app to generate and run home workouts.
 
 ## Features
 
@@ -31,7 +31,7 @@ npm run preview
 1. Open the deployed site over HTTPS.
 2. Use your browser’s **Install app** / **Add to Home Screen** option.
 
-Live site: https://pierreturnbull.github.io/workout-circuit/
+Live site: https://pierreturnbull.github.io/home-workout-generator/
 
 ## Session behavior
 

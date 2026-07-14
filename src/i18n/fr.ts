@@ -3,8 +3,8 @@ import { exerciseNamesFr } from "./exercises/fr";
 import { exerciseGuidesFr } from "./guides/fr";
 
 export const fr: Messages = {
-  appTitle: "Circuit d'entraînement",
-  appDescription: "Créez et suivez vos circuits d'entraînement",
+  appTitle: "Générateur d'entraînement maison",
+  appDescription: "Générez et suivez vos entraînements à domicile",
   locale: {
     label: "Langue",
   },

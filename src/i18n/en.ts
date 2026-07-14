@@ -3,8 +3,8 @@ import { exerciseNamesEn } from "./exercises/en";
 import { exerciseGuidesEn } from "./guides/en";
 
 export const en: Messages = {
-  appTitle: "Workout Circuit",
-  appDescription: "Build and run workout circuits",
+  appTitle: "Home Workout Generator",
+  appDescription: "Generate and run home workouts",
   locale: {
     label: "Language",
   },

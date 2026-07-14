@@ -29,8 +29,8 @@ This project ships to Google Play as a Capacitor Android app. The web app is bun
 
 ```bash
 keytool -genkeypair -v \
-  -keystore android/workout-circuit-release.keystore \
-  -alias workout-circuit \
+  -keystore android/home-workout-generator-release.keystore \
+  -alias home-workout-generator \
   -keyalg RSA -keysize 2048 -validity 10000
 ```
 
@@ -74,10 +74,10 @@ Create a new app in Play Console, then provide:
 
 | Item | Suggested value |
 |---|---|
-| App name | Workout Circuit |
+| App name | Home Workout Generator |
 | Package name | `com.pierreturnbull.workoutcircuit` |
 | Category | Health & Fitness |
-| Privacy policy URL | `https://pierreturnbull.github.io/workout-circuit/privacy-policy.html` |
+| Privacy policy URL | `https://pierreturnbull.github.io/home-workout-generator/privacy-policy.html` |
 | Data safety | No data collected, stored locally on device |
 | Target audience | General audience / 13+ |
 | Release format | Android App Bundle (`.aab`) |
@@ -108,6 +108,6 @@ npx capacitor-assets generate --android   # regenerate launcher icons
 
 ## Notes
 
-- GitHub Pages deploy is unchanged and still uses `BASE_PATH=/workout-circuit/`.
+- GitHub Pages deploy uses `BASE_PATH=/home-workout-generator/`.
 - Android builds use the default web base path `/`.
 - Workout history stays on-device via `localStorage`; mention that in Play Console data safety.

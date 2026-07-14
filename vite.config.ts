@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg"],
       manifest: {
-        name: "Workout Circuit",
-        short_name: "Circuit",
-        description: "Build and run workout circuits",
+        name: "Home Workout Generator",
+        short_name: "Home Workout",
+        description: "Generate and run home workouts",
         theme_color: "#0f172a",
         background_color: "#0f172a",
         display: "standalone",
