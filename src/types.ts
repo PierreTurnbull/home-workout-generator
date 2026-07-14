@@ -17,6 +17,8 @@ export interface ExerciseSet {
 export interface Circuit {
   sets: ExerciseSet[];
   rounds: number;
+  restBetweenRoundsSeconds: number;
+  restBetweenRoundsInput: string;
 }
 
 export type AppPhase = "editing" | "running" | "completed";
@@ -27,6 +29,8 @@ export interface WorkoutSession {
   currentRound: number;
   startedAt: number;
   completedAt: number | null;
+  finishedEarly: boolean;
+  isResting: boolean;
 }
 
 export interface TimerState {

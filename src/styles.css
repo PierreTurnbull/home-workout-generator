@@ -282,6 +282,21 @@ select.input:focus {
   font-weight: 600;
 }
 
+.rest-badge {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--accent);
+}
+
+.rest-hint {
+  margin: 0 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.rest-card .current-qty {
+  color: var(--accent);
+}
+
 .elapsed {
   margin: 0;
   color: var(--text-muted);

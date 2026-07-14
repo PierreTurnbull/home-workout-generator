@@ -24,6 +24,8 @@ let phase: AppPhase = "editing";
 let circuit: Circuit = {
   sets: [createDefaultSet()],
   rounds: 3,
+  restBetweenRoundsSeconds: 0,
+  restBetweenRoundsInput: "",
 };
 let session: WorkoutSession | null = null;
 let timer: TimerState = {
@@ -100,6 +102,16 @@ function renderEditor(): void {
           circuit.rounds = Number.isFinite(value) && value >= 1 ? value : 1;
         },
       }),
+      el("label", { className: "field-label", text: "Rest between rounds (optional)" }, [
+        el("input", {
+          className: "input rest-input",
+          type: "text",
+          inputMode: "text",
+          placeholder: "0:30",
+          value: circuit.restBetweenRoundsInput,
+          onInput: (e) => updateRestBetweenRounds((e.target as HTMLInputElement).value),
+        }),
+      ]),
     ]),
     el(
       "button",
@@ -211,6 +223,20 @@ function updateQuantity(set: ExerciseSet, raw: string): void {
   }
 }
 
+function updateRestBetweenRounds(raw: string): void {
+  circuit.restBetweenRoundsInput = raw;
+
+  if (!raw.trim()) {
+    circuit.restBetweenRoundsSeconds = 0;
+    return;
+  }
+
+  const seconds = parseDurationInput(raw);
+  if (seconds !== null && seconds >= 0) {
+    circuit.restBetweenRoundsSeconds = seconds;
+  }
+}
+
 function syncEditorFromDom(): void {
   if (phase !== "editing") return;
 
@@ -233,6 +259,11 @@ function syncEditorFromDom(): void {
   if (roundsInput instanceof HTMLInputElement) {
     const value = parseInt(roundsInput.value, 10);
     circuit.rounds = Number.isFinite(value) && value >= 1 ? value : 1;
+  }
+
+  const restInput = app.querySelector(".rest-input");
+  if (restInput instanceof HTMLInputElement) {
+    updateRestBetweenRounds(restInput.value);
   }
 }
 
@@ -258,11 +289,15 @@ function startCircuit(): void {
     circuit: {
       sets: circuit.sets.map((set) => ({ ...set })),
       rounds: circuit.rounds,
+      restBetweenRoundsSeconds: circuit.restBetweenRoundsSeconds,
+      restBetweenRoundsInput: circuit.restBetweenRoundsInput,
     },
     currentSetIndex: 0,
     currentRound: 1,
     startedAt: Date.now(),
     completedAt: null,
+    finishedEarly: false,
+    isResting: false,
   };
   phase = "running";
   startElapsedTicker();
@@ -272,15 +307,21 @@ function startCircuit(): void {
 function renderRunner(): void {
   if (!session) return;
 
-  const { circuit: activeCircuit, currentSetIndex, currentRound } = session;
-  const currentSet = activeCircuit.sets[currentSetIndex];
-  const isDuration = currentSet.quantityType === "duration";
+  const { circuit: activeCircuit, currentSetIndex, currentRound, isResting } = session;
 
   const container = el("div", { className: "screen runner-screen" });
 
   container.append(
     el("header", { className: "screen-header runner-header" }, [
-      el("div", { className: "round-badge", text: `Round ${currentRound} / ${activeCircuit.rounds}` }),
+      el(
+        "div",
+        {
+          className: `round-badge ${isResting ? "rest-badge" : ""}`,
+          text: isResting
+            ? `Rest · Round ${currentRound + 1} next`
+            : `Round ${currentRound} / ${activeCircuit.rounds}`,
+        },
+      ),
       el("p", {
         className: "elapsed",
         text: formatElapsed(Date.now() - session.startedAt),
@@ -292,8 +333,9 @@ function renderRunner(): void {
         "ul",
         { className: "overview-list" },
         activeCircuit.sets.map((set, index) => {
-          const isCurrent = index === currentSetIndex;
+          const isCurrent = !isResting && index === currentSetIndex;
           const isDone =
+            isResting ||
             index < currentSetIndex ||
             (index === currentSetIndex && timer.finished);
 
@@ -313,22 +355,25 @@ function renderRunner(): void {
         }),
       ),
     ]),
-    el("section", { className: "card current-exercise-card" }, [
-      el("p", { className: "current-label", text: "Current exercise" }),
-      el("h2", {
-        className: "current-name",
-        text: getExerciseName(currentSet.exerciseId),
-      }),
-      el("p", {
-        className: "current-qty",
-        text: formatQuantity(
-          currentSet.quantityType,
-          currentSet.reps,
-          currentSet.durationSeconds,
-        ),
-      }),
-      isDuration ? renderTimerPanel(currentSet) : renderRepsPanel(),
-    ]),
+    isResting
+      ? el("section", { className: "card current-exercise-card rest-card" }, [
+          el("p", { className: "current-label", text: "Recovery" }),
+          el("h2", { className: "current-name", text: "Rest between rounds" }),
+          el("p", {
+            className: "current-qty",
+            text: formatDuration(activeCircuit.restBetweenRoundsSeconds),
+          }),
+          renderRestPanel(),
+        ])
+      : renderActiveExerciseCard(activeCircuit.sets[currentSetIndex]),
+    el(
+      "button",
+      {
+        className: "btn btn-ghost btn-block",
+        onClick: finishCircuit,
+      },
+      "Finish circuit",
+    ),
     el(
       "button",
       {
@@ -342,7 +387,54 @@ function renderRunner(): void {
   app.append(container);
 }
 
-function renderTimerPanel(set: ExerciseSet): HTMLElement {
+function renderActiveExerciseCard(currentSet: ExerciseSet): HTMLElement {
+  const isDuration = currentSet.quantityType === "duration";
+
+  return el("section", { className: "card current-exercise-card" }, [
+    el("p", { className: "current-label", text: "Current exercise" }),
+    el("h2", {
+      className: "current-name",
+      text: getExerciseName(currentSet.exerciseId),
+    }),
+    el("p", {
+      className: "current-qty",
+      text: formatQuantity(
+        currentSet.quantityType,
+        currentSet.reps,
+        currentSet.durationSeconds,
+      ),
+    }),
+    isDuration ? renderTimerPanel(currentSet, completeCurrentExercise) : renderRepsPanel(),
+  ]);
+}
+
+function renderRestPanel(): HTMLElement {
+  const displaySeconds = timer.running || timer.finished
+    ? timer.remainingSeconds
+    : session!.circuit.restBetweenRoundsSeconds;
+
+  return el("div", { className: "timer-panel" }, [
+    el("div", {
+      className: `timer-display ${timer.finished ? "finished" : ""}`,
+      text: formatDuration(displaySeconds),
+    }),
+    timer.finished
+      ? el("p", { className: "timer-done-msg", text: "Rest complete!" })
+      : el("p", { className: "rest-hint", text: "Recover before the next round." }),
+    timer.finished
+      ? el(
+          "button",
+          {
+            className: "btn btn-accent btn-block btn-lg",
+            onClick: completeRest,
+          },
+          "Start next round",
+        )
+      : null,
+  ]);
+}
+
+function renderTimerPanel(set: ExerciseSet, onComplete: () => void): HTMLElement {
   const canContinue = timer.finished;
   const displaySeconds = timer.running || timer.finished
     ? timer.remainingSeconds
@@ -371,7 +463,7 @@ function renderTimerPanel(set: ExerciseSet): HTMLElement {
           "button",
           {
             className: "btn btn-accent btn-block btn-lg",
-            onClick: completeCurrentExercise,
+            onClick: onComplete,
           },
           "Continue",
         )
@@ -437,6 +529,12 @@ function completeCurrentExercise(): void {
   const isLastRound = session.currentRound >= activeCircuit.rounds;
 
   if (!isLastRound) {
+    if (activeCircuit.restBetweenRoundsSeconds > 0) {
+      session.isResting = true;
+      startTimer(activeCircuit.restBetweenRoundsSeconds);
+      return;
+    }
+
     session.currentRound += 1;
     session.currentSetIndex = 0;
     render();
@@ -444,6 +542,28 @@ function completeCurrentExercise(): void {
   }
 
   session.completedAt = Date.now();
+  session.finishedEarly = false;
+  phase = "completed";
+  stopElapsedTicker();
+  render();
+}
+
+function completeRest(): void {
+  if (!session?.isResting) return;
+
+  resetTimer();
+  session.isResting = false;
+  session.currentRound += 1;
+  session.currentSetIndex = 0;
+  render();
+}
+
+function finishCircuit(): void {
+  if (!session) return;
+
+  resetTimer();
+  session.completedAt = Date.now();
+  session.finishedEarly = true;
   phase = "completed";
   stopElapsedTicker();
   render();
@@ -461,17 +581,29 @@ function renderCompletion(): void {
   if (!session?.completedAt) return;
 
   const totalMs = session.completedAt - session.startedAt;
-  const { circuit: activeCircuit } = session;
+  const { circuit: activeCircuit, finishedEarly, currentRound, currentSetIndex, isResting } =
+    session;
+  const fullRoundsCompleted = finishedEarly
+    ? isResting
+      ? currentRound
+      : currentRound - 1
+    : activeCircuit.rounds;
+  const stoppedMidRound = finishedEarly && !isResting && currentSetIndex > 0;
+  const stoppedExercise = stoppedMidRound
+    ? activeCircuit.sets[currentSetIndex]
+    : null;
 
   const container = el("div", { className: "screen completion-screen" });
 
   container.append(
     el("header", { className: "completion-header" }, [
       el("div", { className: "completion-icon", text: "🎉" }),
-      el("h1", { text: "Circuit complete!" }),
+      el("h1", { text: finishedEarly ? "Circuit finished!" : "Circuit complete!" }),
       el("p", {
         className: "subtitle",
-        text: "Great work — you finished every round.",
+        text: finishedEarly
+          ? "Nice work — here's your recap so far."
+          : "Great work — you finished every round.",
       }),
     ]),
     el("section", { className: "card stats-card" }, [
@@ -481,27 +613,55 @@ function renderCompletion(): void {
       ]),
       el("div", { className: "stat" }, [
         el("span", { className: "stat-label", text: "Rounds completed" }),
-        el("span", { className: "stat-value", text: String(activeCircuit.rounds) }),
+        el("span", {
+          className: "stat-value",
+          text: finishedEarly
+            ? `${fullRoundsCompleted} of ${activeCircuit.rounds}`
+            : String(activeCircuit.rounds),
+        }),
       ]),
       el("div", { className: "stat" }, [
         el("span", { className: "stat-label", text: "Exercises per round" }),
         el("span", { className: "stat-value", text: String(activeCircuit.sets.length) }),
       ]),
+      activeCircuit.restBetweenRoundsSeconds > 0
+        ? el("div", { className: "stat" }, [
+            el("span", { className: "stat-label", text: "Rest between rounds" }),
+            el("span", {
+              className: "stat-value",
+              text: formatDuration(activeCircuit.restBetweenRoundsSeconds),
+            }),
+          ])
+        : null,
+      stoppedMidRound && stoppedExercise
+        ? el("div", { className: "stat" }, [
+            el("span", { className: "stat-label", text: "Stopped at" }),
+            el("span", {
+              className: "stat-value",
+              text: `Round ${currentRound}, ${getExerciseName(stoppedExercise.exerciseId)}`,
+            }),
+          ])
+        : null,
     ]),
     el("section", { className: "card recap-card" }, [
       el("h2", { className: "section-title", text: "Recap" }),
       el(
         "ul",
         { className: "recap-list" },
-        activeCircuit.sets.map((set) =>
-          el("li", { className: "recap-item" }, [
+        activeCircuit.sets.map((set) => {
+          const roundsLabel =
+            fullRoundsCompleted > 0
+              ? `${fullRoundsCompleted} round${fullRoundsCompleted === 1 ? "" : "s"}`
+              : "planned circuit";
+
+          return el("li", { className: "recap-item" }, [
             el("span", { text: getExerciseName(set.exerciseId) }),
             el("span", {
               className: "recap-qty",
-              text: `${formatQuantity(set.quantityType, set.reps, set.durationSeconds)} × ${activeCircuit.rounds} rounds`,
+              text: `${formatQuantity(set.quantityType, set.reps, set.durationSeconds)} × ${roundsLabel}`,
             }),
-          ]),
-        ),
+          ]);
+        }),
       ),
     ]),
     el(
