@@ -1,5 +1,5 @@
-import type { CompletedWorkout, QuantityType, WorkoutSession } from "./types";
-import { createId } from "./utils";
+import type { Circuit, CompletedWorkout, ExerciseSet, QuantityType, SavedCircuit, WorkoutSession } from "./types";
+import { createId, formatDuration } from "./utils";
 
 const HISTORY_STORAGE_KEY = "workout-circuit-history";
 
@@ -39,6 +39,30 @@ export function deleteHistoryEntry(id: string): void {
 
 export function getHistoryEntry(id: string): CompletedWorkout | null {
   return loadHistory().find((entry) => entry.id === id) ?? null;
+}
+
+function exerciseSetFromSaved(set: SavedCircuit["sets"][number]): ExerciseSet {
+  return {
+    id: createId(),
+    exerciseId: set.exerciseId,
+    quantityType: set.quantityType,
+    reps: set.reps,
+    durationSeconds: set.durationSeconds,
+    quantityInput:
+      set.quantityType === "reps" ? String(set.reps) : formatDuration(set.durationSeconds),
+  };
+}
+
+export function circuitFromSaved(saved: SavedCircuit): Circuit {
+  return {
+    sets: saved.sets.map(exerciseSetFromSaved),
+    rounds: saved.rounds,
+    restBetweenRoundsSeconds: saved.restBetweenRoundsSeconds,
+    restBetweenRoundsInput:
+      saved.restBetweenRoundsSeconds > 0
+        ? formatDuration(saved.restBetweenRoundsSeconds)
+        : "",
+  };
 }
 
 export function buildCompletedWorkout(session: WorkoutSession): CompletedWorkout {

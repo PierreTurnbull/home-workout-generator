@@ -109,6 +109,7 @@ export const en: Messages = {
     deleteConfirmMessage: "This circuit will be permanently removed from your history.",
     deleteConfirmAction: "Yes, delete",
     deleteConfirmCancel: "Cancel",
+    redoInEditor: "Redo this circuit",
     summary: "{duration} · {rounds}",
     detailTitle: "Past circuit",
     detailSubtitle: "Completed on {date}",

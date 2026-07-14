@@ -101,6 +101,7 @@ export interface Messages {
     deleteConfirmMessage: string;
     deleteConfirmAction: string;
     deleteConfirmCancel: string;
+    redoInEditor: string;
     summary: string;
     detailTitle: string;
     detailSubtitle: string;

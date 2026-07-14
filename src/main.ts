@@ -39,6 +39,7 @@ import {
 } from "./i18n";
 import {
   buildCompletedWorkout,
+  circuitFromSaved,
   deleteHistoryEntry,
   getHistoryEntry,
   loadHistory,
@@ -1023,6 +1024,19 @@ function openEditor(): void {
   render();
 }
 
+function loadHistoryCircuitIntoEditor(workout: CompletedWorkout): void {
+  closeDeleteConfirm();
+  closeFinishConfirm();
+  closeExerciseGuide();
+  circuit = circuitFromSaved(workout.circuit);
+  selectedHistoryId = null;
+  session = null;
+  resetTimer();
+  stopElapsedTicker();
+  phase = "editing";
+  render();
+}
+
 function openHistoryDetail(id: string): void {
   selectedHistoryId = id;
   phase = "history-detail";
@@ -1292,6 +1306,14 @@ function renderHistoryDetail(): void {
       }),
     ]),
     ...renderWorkoutStatsAndRecap(workout),
+    el(
+      "button",
+      {
+        className: "btn btn-primary btn-block btn-lg",
+        onClick: () => loadHistoryCircuitIntoEditor(workout),
+      },
+      messages.history.redoInEditor,
+    ),
     el(
       "button",
       {

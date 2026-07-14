@@ -109,6 +109,7 @@ export const fr: Messages = {
     deleteConfirmMessage: "Ce circuit sera définitivement retiré de votre historique.",
     deleteConfirmAction: "Oui, supprimer",
     deleteConfirmCancel: "Annuler",
+    redoInEditor: "Refaire ce circuit",
     summary: "{duration} · {rounds}",
     detailTitle: "Circuit passé",
     detailSubtitle: "Terminé le {date}",
