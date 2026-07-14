@@ -35,7 +35,6 @@ export interface Messages {
     intense: string;
     generate: string;
     regenerate: string;
-    estimatedMinutes: string;
     durationMin: string;
   };
   set: {

@@ -126,18 +126,90 @@ body {
 }
 
 .set-row {
-  padding: 0.85rem;
-  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.55rem;
+  margin-bottom: 0.4rem;
   background: rgba(15, 23, 42, 0.45);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
 
-.set-row-header {
+.set-row:last-of-type {
+  margin-bottom: 0.55rem;
+}
+
+.set-row-top,
+.set-row-bottom {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.65rem;
+  gap: 0.35rem;
+}
+
+.set-row-top {
+  margin-bottom: 0.35rem;
+}
+
+.set-row-top .set-exercise-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.set-row-bottom .quantity-type-toggle {
+  display: flex;
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  gap: 0.2rem;
+}
+
+.set-row-bottom .set-quantity-input {
+  flex: 1;
+  min-width: 0;
+  max-width: 5.5rem;
+}
+
+.set-row .input,
+.set-row select.input {
+  margin-top: 0;
+  padding: 0.42rem 0.5rem;
+  font-size: 0.88rem;
+}
+
+.set-row select.input {
+  padding-right: 1.75rem;
+  background-position: right 0.45rem center;
+}
+
+.set-row .toggle-btn {
+  padding: 0.38rem 0.5rem;
+  font-size: 0.78rem;
+}
+
+.set-row .set-index {
+  flex-shrink: 0;
+  min-width: 1.35rem;
+  font-size: 0.75rem;
+}
+
+.set-row .btn-icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  font-size: 1rem;
+}
+
+.set-row .exercise-info-btn {
+  font-size: 0.78rem;
+}
+
+.sets-card {
+  padding: 0.75rem;
+}
+
+.sets-card .section-title {
+  margin-bottom: 0.55rem;
+}
+
+.sets-card .btn-secondary {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.88rem;
 }
 
 .set-row-actions {
@@ -154,13 +226,6 @@ body {
   margin: 0 0 0.85rem;
   color: var(--text-muted);
   font-size: 0.9rem;
-}
-
-.generator-meta {
-  margin: 0.75rem 0 0;
-  color: var(--accent);
-  font-size: 0.85rem;
-  text-align: center;
 }
 
 .chip-group {
@@ -407,7 +472,12 @@ select.input:focus {
   flex-direction: column;
 }
 
-.rounds-input {
+.rounds-card .field-label:not(:first-child) {
+  margin-top: 0.75rem;
+}
+
+.rounds-input,
+.rest-input {
   margin-top: 0;
   max-width: 120px;
 }

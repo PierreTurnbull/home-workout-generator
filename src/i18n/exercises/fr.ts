@@ -41,6 +41,7 @@ export const exerciseNamesFr: Record<string, string> = {
   "punch-jacks": "Jumping jacks avec coups de poing",
   "pushups": "Pompes",
   "reverse-lunges": "Fentes arrière",
+  "reverse-snow-angels": "Anges de neige inversés",
   "russian-twists": "Rotations russes",
   "side-plank": "Planche latérale",
   "side-shuffles": "Pas chassés",
@@ -55,6 +56,7 @@ export const exerciseNamesFr: Record<string, string> = {
   "step-ups": "Montées sur step (step)",
   "sumo-squats": "Squats sumo",
   "superman-hold": "Position superman",
+  "swimmers": "Nageurs",
   "toe-taps": "Touches de pointe",
   "tricep-dips": "Dips triceps (chaise)",
   "tuck-jumps": "Sauts groupés",
@@ -62,4 +64,5 @@ export const exerciseNamesFr: Record<string, string> = {
   "wall-pushups": "Pompes au mur",
   "wall-sit": "Chaise murale",
   "wide-pushups": "Pompes larges",
+  "ytw-raises": "Élévations Y-T-W",
 };

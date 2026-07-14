@@ -42,7 +42,6 @@ export const fr: Messages = {
     intense: "Intense",
     generate: "Générer un circuit",
     regenerate: "Régénérer le circuit",
-    estimatedMinutes: "~{minutes} min estimées",
     durationMin: "{minutes} min",
   },
   set: {

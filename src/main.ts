@@ -14,7 +14,6 @@ import {
   getLocalePreference,
   messages,
   setLocalePreference,
-  tEstimatedMinutes,
   tExerciseGuide,
   tGeneratorDuration,
   tRecapRounds,
@@ -25,7 +24,6 @@ import {
   type LocalePreference,
 } from "./i18n";
 import {
-  estimateCircuitMinutes,
   generateCircuit,
   regenerateExerciseAtIndex,
   type CircuitDuration,
@@ -237,7 +235,7 @@ function renderEditor(): void {
       renderLocalePicker(),
     ]),
     renderGeneratorCard(),
-    el("section", { className: "card" }, [
+    el("section", { className: "card sets-card" }, [
       el("h2", { className: "section-title", text: messages.editor.exerciseSets }),
       ...circuit.sets.map((set, index) => renderSetEditor(set, index)),
       el(
@@ -262,16 +260,15 @@ function renderEditor(): void {
           circuit.rounds = Number.isFinite(value) && value >= 1 ? value : 1;
         },
       }),
-      el("label", { className: "field-label", text: messages.editor.restBetweenRounds }, [
-        el("input", {
-          className: "input rest-input",
-          type: "text",
-          inputMode: "text",
-          placeholder: "0:30",
-          value: circuit.restBetweenRoundsInput,
-          onInput: (e) => updateRestBetweenRounds((e.target as HTMLInputElement).value),
-        }),
-      ]),
+      el("label", { className: "field-label", text: messages.editor.restBetweenRounds }),
+      el("input", {
+        className: "input rest-input",
+        type: "text",
+        inputMode: "text",
+        placeholder: "0:30",
+        value: circuit.restBetweenRoundsInput,
+        onInput: (e) => updateRestBetweenRounds((e.target as HTMLInputElement).value),
+      }),
     ]),
     el(
       "button",
@@ -288,14 +285,6 @@ function renderEditor(): void {
 }
 
 function renderGeneratorCard(): HTMLElement {
-  const previewMinutes = lastGeneratedOptions
-    ? estimateCircuitMinutes(
-        circuit.sets,
-        circuit.rounds,
-        circuit.restBetweenRoundsSeconds,
-      )
-    : null;
-
   return el("section", { className: "card generator-card" }, [
     el("h2", { className: "section-title", text: messages.generator.title }),
     el("p", { className: "generator-copy", text: messages.generator.copy }),
@@ -319,12 +308,6 @@ function renderGeneratorCard(): HTMLElement {
       },
       lastGeneratedOptions ? messages.generator.regenerate : messages.generator.generate,
     ),
-    lastGeneratedOptions && previewMinutes
-      ? el("p", {
-          className: "generator-meta",
-          text: tEstimatedMinutes(previewMinutes),
-        })
-      : null,
   ]);
 }
 
@@ -390,40 +373,14 @@ function shuffleExercise(setId: string): void {
 
 function renderSetEditor(set: ExerciseSet, index: number): HTMLElement {
   return el("article", { className: "set-row", dataset: { id: set.id } }, [
-    el("div", { className: "set-row-header" }, [
+    el("div", { className: "set-row-top" }, [
       el("span", { className: "set-index", text: `#${index + 1}` }),
-      el("div", { className: "set-row-actions" }, [
-        el(
-          "button",
-          {
-            className: "btn-icon shuffle-btn",
-            title: messages.set.shuffle,
-            onClick: () => shuffleExercise(set.id),
-          },
-          "↻",
-        ),
-        el(
-          "button",
-          {
-            className: "btn-icon",
-            title: messages.set.remove,
-            onClick: () => removeSet(set.id),
-            disabled: circuit.sets.length === 1,
-          },
-          "×",
-        ),
-      ]),
-    ]),
-    el("label", { className: "field-label" }, [
-      el("div", { className: "field-label-row" }, [
-        el("span", { text: messages.set.exercise }),
-        renderExerciseInfoButton(set.exerciseId),
-      ]),
       el(
         "select",
         {
-          className: "input",
+          className: "input set-exercise-select",
           value: set.exerciseId,
+          ariaLabel: `${messages.set.exercise} #${index + 1}`,
           onChange: () => {
             syncEditorFromDom();
             render();
@@ -443,19 +400,41 @@ function renderSetEditor(set: ExerciseSet, index: number): HTMLElement {
           ),
         ),
       ),
+      renderExerciseInfoButton(set.exerciseId),
+      el(
+        "button",
+        {
+          className: "btn-icon shuffle-btn",
+          title: messages.set.shuffle,
+          ariaLabel: messages.set.shuffle,
+          onClick: () => shuffleExercise(set.id),
+        },
+        "↻",
+      ),
+      el(
+        "button",
+        {
+          className: "btn-icon",
+          title: messages.set.remove,
+          ariaLabel: messages.set.remove,
+          onClick: () => removeSet(set.id),
+          disabled: circuit.sets.length === 1,
+        },
+        "×",
+      ),
     ]),
-    el("div", { className: "quantity-type-toggle" }, [
-      quantityTypeButton(set, "reps", messages.set.reps),
-      quantityTypeButton(set, "duration", messages.set.duration),
-    ]),
-    el("label", { className: "field-label" }, [
-      quantityLabel(set.quantityType),
+    el("div", { className: "set-row-bottom" }, [
+      el("div", { className: "quantity-type-toggle" }, [
+        quantityTypeButton(set, "reps", messages.set.reps),
+        quantityTypeButton(set, "duration", messages.set.duration),
+      ]),
       el("input", {
-        className: "input",
+        className: "input set-quantity-input",
         type: "text",
         inputMode: set.quantityType === "reps" ? "numeric" : "text",
         placeholder: set.quantityType === "reps" ? "10" : "1:30",
         value: set.quantityInput,
+        ariaLabel: quantityLabel(set.quantityType),
         dataset: { quantityInput: "true" },
         onInput: (e) => updateQuantity(set, (e.target as HTMLInputElement).value),
       }),

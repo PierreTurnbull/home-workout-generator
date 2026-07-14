@@ -172,6 +172,15 @@ export const exerciseGuidesFr: Record<string, ExerciseGuide> = {
       "Poussez sur le talon avant pour revenir et alternez.",
     ],
   },
+  "reverse-snow-angels": {
+    summary: "Face au sol, balayez les bras vers l'arrière pour renforcer le haut du dos.",
+    steps: [
+      "Allongé face au sol, bras tendus au-dessus de la tête, paumes vers le bas.",
+      "Soulevez légèrement la poitrine et balayez les bras vers l'extérieur puis vers les hanches.",
+      "Serrez les omoplates sans hausser les épaules.",
+      "Revenez avec contrôle et répétez.",
+    ],
+  },
   "single-leg-glute-bridge": {
     summary: "Pont fessier avec une jambe tendue décollée du sol.",
     steps: [
@@ -296,6 +305,15 @@ export const exerciseGuidesFr: Record<string, ExerciseGuide> = {
       "Levez les bras, la poitrine et les jambes de quelques centimètres.",
       "Contractez les fessiers et le bas du dos sans forcer le cou.",
       "Maintenez en respirant régulièrement.",
+    ],
+  },
+  swimmers: {
+    summary: "Alternez le bras et la jambe opposés, allongé face au sol.",
+    steps: [
+      "Allongé face au sol, bras tendus au-dessus de la tête.",
+      "Levez le bras droit et la jambe gauche de quelques centimètres.",
+      "Redescendez et alternez bras gauche et jambe droite.",
+      "Gardez le cou neutre et des mouvements contrôlés.",
     ],
   },
   "tricep-dips": {
@@ -566,6 +584,15 @@ export const exerciseGuidesFr: Record<string, ExerciseGuide> = {
       "Penchez-vous et marchez avec les mains jusqu'en planche.",
       "Faites une pompe, puis ramenez les mains vers les pieds.",
       "Relevez-vous et répétez.",
+    ],
+  },
+  "ytw-raises": {
+    summary: "Élévations d'épaules face au sol en formes Y, T et W.",
+    steps: [
+      "Allongé face au sol, bras en Y, pouces vers le haut.",
+      "Levez les bras de quelques centimètres, puis redescendez avec contrôle.",
+      "Passez en T bras sur les côtés et répétez.",
+      "Terminez en W, coudes fléchis, en serrant les omoplates.",
     ],
   },
 };

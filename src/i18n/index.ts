@@ -84,10 +84,6 @@ export function tGeneratorDuration(minutes: number): string {
   return interpolate(messages.generator.durationMin, { minutes });
 }
 
-export function tEstimatedMinutes(minutes: number): string {
-  return interpolate(messages.generator.estimatedMinutes, { minutes });
-}
-
 export function tRoundBadge(current: number, total: number): string {
   return interpolate(messages.runner.round, { current, total });
 }

@@ -172,6 +172,15 @@ export const exerciseGuidesEn: Record<string, ExerciseGuide> = {
       "Push through the front heel to return and switch legs.",
     ],
   },
+  "reverse-snow-angels": {
+    summary: "Lie face down and sweep your arms back to strengthen the upper back.",
+    steps: [
+      "Lie face down with arms extended overhead and palms facing down.",
+      "Lift your chest slightly and sweep your arms out and back toward your hips.",
+      "Squeeze your shoulder blades together without shrugging.",
+      "Return with control and repeat.",
+    ],
+  },
   "single-leg-glute-bridge": {
     summary: "A glute bridge performed with one leg extended off the floor.",
     steps: [
@@ -296,6 +305,15 @@ export const exerciseGuidesEn: Record<string, ExerciseGuide> = {
       "Lift your arms, chest, and legs a few inches off the floor.",
       "Squeeze your glutes and lower back without straining your neck.",
       "Hold the position with steady breathing.",
+    ],
+  },
+  swimmers: {
+    summary: "Alternate lifting opposite arm and leg while lying face down.",
+    steps: [
+      "Lie face down with arms extended overhead.",
+      "Lift your right arm and left leg a few inches off the floor.",
+      "Lower and switch to the left arm and right leg.",
+      "Keep your neck neutral and movements controlled.",
     ],
   },
   "tricep-dips": {
@@ -566,6 +584,15 @@ export const exerciseGuidesEn: Record<string, ExerciseGuide> = {
       "Hinge forward and walk your hands out to a plank.",
       "Perform one push-up, then walk hands back toward your feet.",
       "Stand up and repeat.",
+    ],
+  },
+  "ytw-raises": {
+    summary: "Prone shoulder raises in Y, T, and W shapes for scapular control.",
+    steps: [
+      "Lie face down with arms extended in a Y shape, thumbs pointing up.",
+      "Lift your arms a few inches, then lower with control.",
+      "Move to a T shape with arms out to the sides and repeat.",
+      "Finish with elbows bent in a W shape, squeezing your shoulder blades.",
     ],
   },
 };

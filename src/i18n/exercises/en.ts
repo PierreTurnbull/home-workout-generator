@@ -41,6 +41,7 @@ export const exerciseNamesEn: Record<string, string> = {
   "punch-jacks": "Punch jacks",
   "pushups": "Push-ups",
   "reverse-lunges": "Reverse lunges",
+  "reverse-snow-angels": "Reverse snow angels",
   "russian-twists": "Russian twists",
   "side-plank": "Side plank",
   "side-shuffles": "Side shuffles",
@@ -55,6 +56,7 @@ export const exerciseNamesEn: Record<string, string> = {
   "step-ups": "Step-ups (step)",
   "sumo-squats": "Sumo squats",
   "superman-hold": "Superman hold",
+  "swimmers": "Swimmers",
   "toe-taps": "Toe taps",
   "tricep-dips": "Tricep dips (chair)",
   "tuck-jumps": "Tuck jumps",
@@ -62,4 +64,5 @@ export const exerciseNamesEn: Record<string, string> = {
   "wall-pushups": "Wall push-ups",
   "wall-sit": "Wall sit",
   "wide-pushups": "Wide push-ups",
+  "ytw-raises": "Y-T-W raises",
 };
