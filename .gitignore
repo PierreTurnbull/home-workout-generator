@@ -3,6 +3,10 @@ dist
 .DS_Store
 *.local
 
+# Blender
+blender/renders/
+*.blend1
+
 # Android
 android/.gradle/
 android/.idea/
